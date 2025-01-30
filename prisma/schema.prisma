@@ -3,18 +3,26 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+generator client {
+  provider = "prisma-client-js"
+}
+
 model User {
   id        Int      @id @default(autoincrement())
-  username  String
+  username  String?
   email     String   @unique @db.VarChar(255)
   password  String
   avatar    String?
-  phoneNo   String   @unique
+  provider  String   @default("manual")
+  // providerId String?
+  phoneNo   String?  @unique
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  @@unique([provider])
 }
 
-model Video {
+model Videos {
   id          String   @id @default(uuid())
   title       String
   description String?
@@ -31,7 +39,7 @@ model Course {
   id          String   @id @default(uuid())
   name        String
   description String
-  videos      Video[]
+  videos      Videos[]
   creatorId   String
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt

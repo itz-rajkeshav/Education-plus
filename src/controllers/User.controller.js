@@ -100,5 +100,37 @@ const createUser=asyncHandler(async(req,res)=>{
       throw new ApiError(401, error?.message || 'Invalid refresh token');
     }
   };
+  const login=asyncHandler(async(req,res)=>{
+    const {email,password}= req.body;
+    const existedUser = await prisma.user.findUnique({
+      where:{
+        email:email
+      },select:{
+        id:true,
+        username:true,
+        email:true,
+        avatar:true,
+        provider:true,
+        providerId:true,
+        phoneNo:true,
+        refreshTokenExpiry:true,
+        createdAt:true,
+        updatedAt:true,
+      }
+    })
+    const options = {
+      httpOnly: true,
+      secure: true,
+    };
+    if(!existedUser){
+      throw new ApiError(409,"User is not found with this email. Please Sign In first")
+    }
+    const { accessToken, refreshToken } = await generateTokens(existedUser.id);
+    await prisma.user.update({
+      where: { id: existedUser.id },
+      data: { refreshToken: refreshToken  }
+  });
+    return res.status(200).cookie("accessToken",accessToken,options).cookie("refreshToken",refreshToken,options).json(new ApiResponse(200,existedUser,"user log in successfully"));
+  })
   
-export  {createUser,generateTokens,refreshAccessToken};
+export  {createUser,generateTokens,refreshAccessToken,login};

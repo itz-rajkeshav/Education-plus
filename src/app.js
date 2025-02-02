@@ -5,6 +5,7 @@ import cors from "cors"
 import userRoute from "./routes/user.routes.js"
 import cookieParser from "cookie-parser"
 import _logger from "pino-http"
+import createVideo from "./routes/video.routes.js"
 import googleSIgnIn from "./routes/googleAuth.routes.js"
 const logger = _logger();
 dotenv.config();  
@@ -25,6 +26,7 @@ app.get('/', (req, res) => {
   });
   app.use("/api/v1/user",userRoute);
   app.use("/api/v1/user",googleSIgnIn);
+  app.use("/api/v1/user",createVideo);
   const PORT = process.env.PORT || 10000;
   server.listen(PORT, () => {
     console.log(`Server is running on http://localhost:${PORT}`);

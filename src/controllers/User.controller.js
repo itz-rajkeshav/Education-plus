@@ -113,7 +113,6 @@ const createUser=asyncHandler(async(req,res)=>{
         provider:true,
         providerId:true,
         phoneNo:true,
-        refreshTokenExpiry:true,
         createdAt:true,
         updatedAt:true,
       }

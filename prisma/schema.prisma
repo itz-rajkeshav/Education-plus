@@ -8,40 +8,40 @@ generator client {
 }
 
 model User {
-  id                 Int       @id @default(autoincrement())
-  username           String?
-  email              String    @unique @db.VarChar(255)
-  password           String
-  avatar             String?
-  provider           String    @default("manual")
-  providerId         String?
-  phoneNo            String?   @unique
-  refreshToken       String?
-  refreshTokenExpiry DateTime?
-  createdAt          DateTime  @default(now())
-  updatedAt          DateTime  @updatedAt
+  id           Int      @id @unique
+  username     String?
+  email        String   @unique @db.VarChar(255)
+  password     String
+  avatar       String?
+  provider     String   @default("manual")
+  providerId   String?
+  phoneNo      String?  @unique
+  refreshToken String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
 
   @@unique([provider, providerId])
 }
 
-model Videos {
+model Video {
   id          String   @id @default(uuid())
+  Videotype   String
   title       String
   description String?
-  thumbnail   String
+  thumbnail   String?
   createdBy   String
   duration    Int
-  publishedAt DateTime
+  link        String
   createdAt   DateTime @default(now())
-  Course      Course?  @relation(fields: [courseId], references: [id])
-  courseId    String?
+  Course      Course?  @relation(fields: [courseName], references: [name])
+  courseName  String
 }
 
 model Course {
   id          String   @id @default(uuid())
-  name        String
+  name        String   @unique
   description String
-  videos      Videos[]
+  videos      Video[]
   creatorId   String
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt

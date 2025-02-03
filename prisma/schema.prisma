@@ -42,9 +42,9 @@ model Course {
   name        String   @unique
   description String
   videos      Video[]
-  creatorId   String
-  createdAt   DateTime @default(now())
+  creatorId   String?
+  thumbnail   String?
+  tag         String?  @default("free")
   updatedAt   DateTime @updatedAt
-  thumbnail   String
-  tag         String
+  createdAt   DateTime @default(now())
 }

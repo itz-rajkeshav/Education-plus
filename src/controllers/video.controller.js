@@ -31,4 +31,26 @@ const createVideo = asyncHandler(async(req,res)=>{
         return res.json(new ApiResponse(200,video,"video created and uploaded successfully"));
     
 });
-export default createVideo;
+const delVideo = asyncHandler(async(req,res)=>{
+    const {title}=req.body;
+    if(!title){
+        throw new ApiError(400,"title of the video must be required");
+    }
+    await prisma.$transaction([
+        prisma.video.delete({where:{title:title}})
+    ]);
+    return res.json(new ApiResponse(200,"del Video"))
+})
+const getAllVideo=asyncHandler(async(req,res)=>{
+    const videos = await prisma.video.findMany({
+        include:{
+            Course:true,
+        },
+        orderBy:{
+            createdAt:"desc"
+        }
+
+    });
+    return res.json(new ApiResponse(200,"successfully fetch all videos ",videos))
+})
+export  {createVideo,getAllVideo,delVideo}

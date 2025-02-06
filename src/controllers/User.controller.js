@@ -54,24 +54,28 @@ const createUser=asyncHandler(async(req,res)=>{
     }
   };
  const refreshAccessToken = async (req, res) => {
-    const incomingRefreshToken = 
-      req.cookies.refreshToken || req.body.refreshToken;
+    const RefreshToken = 
+      req.cookies.RefreshToken || req.body.RefreshToken;
   
-    if (!incomingRefreshToken) {
+    if (!RefreshToken) {
       throw new ApiError(401, 'Refresh token is required');
     }
   
     try {
       const decodedToken = Jwt.verify(
-        incomingRefreshToken, 
+        RefreshToken, 
         process.env.REFRESH_TOKEN_SECRET
       );
   
       const user = await prisma.user.findFirst({
         where: { 
           id: decodedToken.id,
-          refreshToken: incomingRefreshToken 
-        }
+          refreshToken: RefreshToken 
+        },
+        select: {
+          id: true,
+          refreshToken: true
+      }
       });
   
       if (!user) {
@@ -109,6 +113,7 @@ const createUser=asyncHandler(async(req,res)=>{
         id:true,
         username:true,
         email:true,
+        password:true,
         avatar:true,
         provider:true,
         providerId:true,
@@ -124,12 +129,30 @@ const createUser=asyncHandler(async(req,res)=>{
     if(!existedUser){
       throw new ApiError(409,"User is not found with this email. Please Sign In first")
     }
+    const isPasswordCorrect = await bcrypt.compare(password, existedUser.password);
+    if (!isPasswordCorrect) {
+      throw new ApiError(401, "Invalid Password");
+    }
+    const { password: _, ...userData } = existedUser;
     const { accessToken, refreshToken } = await generateTokens(existedUser.id);
     await prisma.user.update({
       where: { id: existedUser.id },
       data: { refreshToken: refreshToken  }
   });
-    return res.status(200).cookie("accessToken",accessToken,options).cookie("refreshToken",refreshToken,options).json(new ApiResponse(200,existedUser,"user log in successfully"));
+    return res.status(200).cookie("accessToken",accessToken,options).cookie("refreshToken",refreshToken,options).json(new ApiResponse(200,userData,"user log in successfully"));
+  })
+  const logout = asyncHandler(async(req,res)=>{
+    const user_id = req.user.id ;
+    await prisma.user.update({
+      where:{id:user_id},
+      data:{refreshToken:null}
+    });
+    const options = {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'strict'
+    };
+  return res.status(200).clearCookie("accessToken", options).clearCookie("refreshToken", options).json(new ApiResponse(200, {}, "User logged out successfully"));
   })
   
-export  {createUser,generateTokens,refreshAccessToken,login};
+export  {createUser,generateTokens,refreshAccessToken,login,logout};
